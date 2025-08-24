@@ -1,0 +1,58 @@
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+out/
+
+# Rider
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# NuGet Packages
+*.nupkg
+# The packages folder can be ignored because of PackageReference
+packages/
+
+# Auto generated files
+*.g.cs
+*.g.i.cs
+
+# Backup & logs
+*.backup
+*.log
+
+# Publish output
+publish/
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# IIS Express
+/.vs/
+*.vspscc
+
+# DotCover
+*.dotCover
+
+# NCrunch
+*.ncrunch*
+.*crunch*
+
+# Coverlet code coverage results
+coverage.opencover.xml
+coverage.json
+coverage/
+
+# Others
+*.dbmdl
+*.jfm
