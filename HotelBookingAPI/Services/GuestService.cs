@@ -11,9 +11,9 @@ namespace HotelBookingAPI.Services
     public class GuestService
     {
         private readonly IGenericRepository<Guest> _genericRepo;
-        private readonly IAuthRepository _guestRepo;
+        private readonly IGuestRepository _guestRepo;
 
-        public GuestService(IGenericRepository<Guest> genericRepo, IAuthRepository guestRepo)
+        public GuestService(IGenericRepository<Guest> genericRepo, IGuestRepository guestRepo)
         {
             _genericRepo = genericRepo;
             _guestRepo = guestRepo;
@@ -24,7 +24,6 @@ namespace HotelBookingAPI.Services
             var guests = await _genericRepo.GetAllAsync();
             return guests.Select(g => new GuestReadDto
             {
-                GuestId = g.GuestId,
                 FullName = g.FullName,
                 Email = g.Email,
                 Phone = g.Phone,
@@ -41,7 +40,6 @@ namespace HotelBookingAPI.Services
 
             return new GuestReadDto
             {
-                GuestId = guest.GuestId,
                 FullName = guest.FullName,
                 Email = guest.Email,
                 Phone = guest.Phone,
@@ -71,7 +69,6 @@ namespace HotelBookingAPI.Services
 
             return new GuestReadDto
             {
-                GuestId = created.GuestId,
                 FullName = created.FullName,
                 Email = created.Email,
                 Phone = created.Phone,
@@ -101,7 +98,6 @@ namespace HotelBookingAPI.Services
 
             return new GuestReadDto
             {
-                GuestId = updated.GuestId,
                 FullName = updated.FullName,
                 Email = updated.Email,
                 Phone = updated.Phone,
@@ -117,6 +113,79 @@ namespace HotelBookingAPI.Services
             if (existing == null) return false;
 
             return await _genericRepo.DeleteAsync(id);
+        }
+        public async Task<GuestReadDto?> GetByEmailAsync(string email)
+        {
+            var guest = await _guestRepo.GetByEmailAsync(email);
+            if (guest == null) return null;
+
+            return new GuestReadDto
+            {
+                FullName = guest.FullName,
+                Email = guest.Email,
+                Phone = guest.Phone,
+                Address = guest.Address,
+                CreatedAt = guest.CreatedAt,
+                TotalBookings = guest.Bookings?.Count ?? 0
+            };
+        }
+
+        public async Task<GuestReadDto?> GetByPhoneAsync(string phone)
+        {
+            var guest = await _guestRepo.GetByPhoneAsync(phone);
+            if (guest == null) return null;
+
+            return new GuestReadDto
+            {
+                FullName = guest.FullName,
+                Email = guest.Email,
+                Phone = guest.Phone,
+                Address = guest.Address,
+                CreatedAt = guest.CreatedAt,
+                TotalBookings = guest.Bookings?.Count ?? 0
+            };
+        }
+
+        public async Task<IEnumerable<GuestReadDto>> SearchByNameAsync(string name)
+        {
+            var guests = await _guestRepo.SearchByNameAsync(name);
+            return guests.Select(g => new GuestReadDto
+            {
+                FullName = g.FullName,
+                Email = g.Email,
+                Phone = g.Phone,
+                Address = g.Address,
+                CreatedAt = g.CreatedAt,
+                TotalBookings = g.Bookings?.Count ?? 0
+            });
+        }
+
+        public async Task<IEnumerable<GuestReadDto>> GetGuestsCreatedAfterAsync(DateTime date)
+        {
+            var guests = await _guestRepo.GetGuestsCreatedAfterAsync(date);
+            return guests.Select(g => new GuestReadDto
+            {
+                FullName = g.FullName,
+                Email = g.Email,
+                Phone = g.Phone,
+                Address = g.Address,
+                CreatedAt = g.CreatedAt,
+                TotalBookings = g.Bookings?.Count ?? 0
+            });
+        }
+
+        public async Task<IEnumerable<GuestReadDto>> GetTopGuestsByBookingsAsync(int count)
+        {
+            var guests = await _guestRepo.GetTopGuestsByBookingsAsync(count);
+            return guests.Select(g => new GuestReadDto
+            {
+                FullName = g.FullName,
+                Email = g.Email,
+                Phone = g.Phone,
+                Address = g.Address,
+                CreatedAt = g.CreatedAt,
+                TotalBookings = g.Bookings?.Count ?? 0
+            });
         }
     }
 }

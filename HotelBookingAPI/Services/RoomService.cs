@@ -23,7 +23,7 @@ namespace HotelBookingAPI.Services
         public async Task<IEnumerable<RoomReadDto>> GetAllAsync()
         {
             var rooms = await _genericRepo.GetAllQueryable()
-                .Include(r => r.RoomType) // Ensure RoomType is loaded
+                .Include(r => r.RoomType)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -123,12 +123,11 @@ namespace HotelBookingAPI.Services
             return await _genericRepo.DeleteAsync(id);
         }
 
-        // Private helper: maps Room entity to RoomReadDto
+        //maps Room entity to RoomReadDto
         private static RoomReadDto MapToReadDto(Room r)
         {
             return new RoomReadDto
             {
-                RoomId = r.RoomId,
                 RoomNumber = r.RoomNumber,
                 Capacity = r.Capacity,
                 PricePerDay = r.PricePerDay,
@@ -137,7 +136,6 @@ namespace HotelBookingAPI.Services
                 Floor = r.Floor,
                 ViewType = r.ViewType,
                 CreatedAt = r.CreatedAt,
-                RoomTypeId = r.RoomTypeId,
                 RoomTypeName = r.RoomType?.TypeName ?? string.Empty
             };
         }

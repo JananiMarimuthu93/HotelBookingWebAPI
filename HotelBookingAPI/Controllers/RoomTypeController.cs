@@ -3,6 +3,7 @@ using HotelBookingAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace HotelBookingAPI.Controllers
@@ -26,6 +27,13 @@ namespace HotelBookingAPI.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<RoomTypeReadDto>>> GetAll()
+        {
+            var result = await _service.GetAllAsync();
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<RoomTypeReadDto>> GetById(int id)
         {
@@ -38,7 +46,7 @@ namespace HotelBookingAPI.Controllers
         public async Task<ActionResult<RoomTypeReadDto>> Create(RoomTypeCreateDTO dto)
         {
             var created = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.RoomTypeId }, created);
+            return Ok(created);
         }
 
         [HttpPut("{id}")]

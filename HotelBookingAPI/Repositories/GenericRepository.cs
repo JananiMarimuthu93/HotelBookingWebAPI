@@ -29,12 +29,6 @@ namespace HotelBookingAPI.Repositories.Implementations
         {
             return await _dbSet.FindAsync(id);
         }
-
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
-        {
-            return await _dbSet.Where(predicate).ToListAsync();
-        }
-
         public async Task<T> AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
@@ -62,5 +56,12 @@ namespace HotelBookingAPI.Repositories.Implementations
         {
             return _dbSet.AsQueryable();
         }
+
+
+        //public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+        //{
+        //    return await _dbSet.Where(predicate).ToListAsync();
+        //}
+
     }
 }

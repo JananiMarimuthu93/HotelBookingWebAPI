@@ -13,9 +13,6 @@ namespace HotelBookingAPI.Repositories.Interfaces
         // Get by Id
         Task<T?> GetByIdAsync(int id);
 
-        // Find by condition
-        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
-
         // Add
         Task<T> AddAsync(T entity);
 
@@ -26,5 +23,7 @@ namespace HotelBookingAPI.Repositories.Interfaces
         Task<bool> DeleteAsync(int id);
 
         IQueryable<T> GetAllQueryable();
+
+        //Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
     }
 }

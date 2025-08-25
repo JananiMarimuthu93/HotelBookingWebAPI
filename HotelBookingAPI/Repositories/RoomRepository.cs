@@ -16,17 +16,15 @@ namespace HotelBookingAPI.Repositories.Implementations
         {
             _context = context;
         }
-
         // Get all available rooms
         public async Task<IEnumerable<Room>> GetAvailableRoomsAsync()
         {
             return await _context.Rooms
                 .Where(r => r.IsAvailable)
-                .Include(r => r.RoomType) // optional: include RoomType details
+                .Include(r => r.RoomType)
                 .AsNoTracking()
                 .ToListAsync();
         }
-
         // Get all rooms by RoomTypeId
         public async Task<IEnumerable<Room>> GetRoomsByTypeAsync(int roomTypeId)
         {
@@ -36,8 +34,7 @@ namespace HotelBookingAPI.Repositories.Implementations
                 .AsNoTracking()
                 .ToListAsync();
         }
-
-        // Check if RoomNumber already exists (for create/update)
+        // Check if RoomNumber already exists(for create or update)
         public async Task<bool> IsRoomNumberExistsAsync(string roomNumber, int? excludeId = null)
         {
             return await _context.Rooms

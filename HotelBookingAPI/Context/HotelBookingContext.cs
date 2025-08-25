@@ -7,14 +7,19 @@ namespace HotelBookingAPI.Context
 {
     public class HotelBookingContext : DbContext
     {
-        public HotelBookingContext(DbContextOptions<HotelBookingContext> options) : base(options) { }
+        public HotelBookingContext() { }
+        public HotelBookingContext(DbContextOptions<HotelBookingContext> options) : base(options) 
+        {
+
+        }
 
         // Auth Models
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
+        
         // DbSets
-        public DbSet<RoomType> RoomTypes { get; set; }
-        public DbSet<Room> Rooms { get; set; }
+        public virtual DbSet<RoomType> RoomTypes { get; set; }
+        public virtual DbSet<Room> Rooms { get; set; }
         public DbSet<Guest> Guests { get; set; }
         public DbSet<Booking> Bookings { get; set; }
 
@@ -47,9 +52,6 @@ namespace HotelBookingAPI.Context
                 .HasForeignKey(b => b.GuestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-
-            // -------- SEED DATA WITH CONSTANT DATES --------
-
             DateTime seedDate1 = new DateTime(2025, 08, 24, 10, 0, 0);
             DateTime seedDate2 = new DateTime(2025, 08, 25, 12, 0, 0);
             DateTime seedDate3 = new DateTime(2025, 08, 26, 14, 0, 0);
@@ -70,8 +72,8 @@ namespace HotelBookingAPI.Context
 
             // Guests
             modelBuilder.Entity<Guest>().HasData(
-                new Guest { GuestId = 1, FullName = "John Doe", Email = "john@example.com", Phone = "9876543210", Address = "123 Street, City", CreatedAt = seedDate2 },
-                new Guest { GuestId = 2, FullName = "Jane Smith", Email = "jane@example.com", Phone = "9876543211", Address = "456 Avenue, City", CreatedAt = seedDate2 }
+                new Guest { GuestId = 1, FullName = "Janani M", Email = "jan@gmail.com", Phone = "9385562091", Address = "123 Street, City", CreatedAt = seedDate2 },
+                new Guest { GuestId = 2, FullName = "Deepika M", Email = "dep@gmail.com", Phone = "9876543211", Address = "456 Avenue, City", CreatedAt = seedDate2 }
             );
 
             // Bookings

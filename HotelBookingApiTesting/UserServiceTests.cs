@@ -2,9 +2,12 @@ using HotelBookingAPI.Models.AuthModels;
 using HotelBookingAPI.Repositories.Interfaces;
 using HotelBookingAPI.Services;
 using Moq;
+using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace HotelBookingApiTesting
 {
+    [TestFixture]
     public class UserServiceTests
     {
         private Mock<IUserRepository> _userRepoMock = null!;
@@ -24,8 +27,7 @@ namespace HotelBookingApiTesting
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword("1234");
             var user = new User { UserId = "U001", Email = "test@gmail.com", PasswordHash = hashedPassword };
 
-            _userRepoMock.Setup(r => r.GetByEmailAsync("test@gmail.com"))
-                         .ReturnsAsync(user);
+            _userRepoMock.Setup(r => r.GetByEmailAsync("test@gmail.com")).ReturnsAsync(user);
 
             // Act
             var result = await _userService.AuthenticateAsync("test@gmail.com", "1234");
@@ -39,8 +41,7 @@ namespace HotelBookingApiTesting
         public async Task AuthenticateAsync_WithInvalidEmail_ReturnsNull()
         {
             // Arrange
-            _userRepoMock.Setup(r => r.GetByEmailAsync("invalid@gmail.com"))
-                         .ReturnsAsync((User?)null);
+            _userRepoMock.Setup(r => r.GetByEmailAsync("invalid@gmail.com")).ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.AuthenticateAsync("invalid@gmail.com", "1234");
@@ -56,8 +57,7 @@ namespace HotelBookingApiTesting
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword("1234");
             var user = new User { UserId = "U001", Email = "test@gmail.com", PasswordHash = hashedPassword };
 
-            _userRepoMock.Setup(r => r.GetByEmailAsync("test@gmail.com"))
-                         .ReturnsAsync(user);
+            _userRepoMock.Setup(r => r.GetByEmailAsync("test@gmail.com")).ReturnsAsync(user);
 
             // Act
             var result = await _userService.AuthenticateAsync("test@gmail.com", "wrongpassword");

@@ -1,6 +1,7 @@
 ﻿using HotelBookingAPI.DTOs;
 using HotelBookingAPI.Models.DomainModels;
 using HotelBookingAPI.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +24,18 @@ namespace HotelBookingAPI.Services
             var roomTypes = await _roomTypeRepo.GetActiveRoomTypesAsync();
             return roomTypes.Select(rt => new RoomTypeReadDto
             {
-                RoomTypeId = rt.RoomTypeId,
+                TypeName = rt.TypeName,
+                Description = rt.Description,
+                IsActive = rt.IsActive,
+                CreatedAt = rt.CreatedAt
+            });
+        }
+
+        public async Task<IEnumerable<RoomTypeReadDto>> GetAllAsync()
+        {
+            var roomTypes = await _genericRepo.GetAllAsync();
+            return roomTypes.Select(rt => new RoomTypeReadDto
+            {
                 TypeName = rt.TypeName,
                 Description = rt.Description,
                 IsActive = rt.IsActive,
@@ -38,7 +50,7 @@ namespace HotelBookingAPI.Services
 
             return new RoomTypeReadDto
             {
-                RoomTypeId = rt.RoomTypeId,
+            
                 TypeName = rt.TypeName,
                 Description = rt.Description,
                 IsActive = rt.IsActive,
@@ -62,7 +74,6 @@ namespace HotelBookingAPI.Services
 
             return new RoomTypeReadDto
             {
-                RoomTypeId = created.RoomTypeId,
                 TypeName = created.TypeName,
                 Description = created.Description,
                 IsActive = created.IsActive,
@@ -86,7 +97,6 @@ namespace HotelBookingAPI.Services
 
             return new RoomTypeReadDto
             {
-                RoomTypeId = updated.RoomTypeId,
                 TypeName = updated.TypeName,
                 Description = updated.Description,
                 IsActive = updated.IsActive,

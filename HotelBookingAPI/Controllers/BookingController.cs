@@ -44,7 +44,7 @@ namespace HotelBookingAPI.Controllers
         public async Task<ActionResult<BookingReadDto>> Create([FromBody] BookingCreateDto dto)
         {
             var created = await _bookingService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.BookingId }, created);
+            return Ok(created);
         }
 
         // PUT: api/Booking/{id}

@@ -101,21 +101,18 @@ namespace HotelBookingAPI.Services
             return await _genericRepo.DeleteAsync(id);
         }
 
-        // Private helper: maps Booking entity to BookingReadDto
+        //Maps Booking entity to BookingReadDto
         private static BookingReadDto MapToReadDto(Booking b)
         {
             return new BookingReadDto
             {
-                BookingId = b.BookingId,
                 CheckInDate = b.CheckInDate,
                 CheckOutDate = b.CheckOutDate,
                 NumberOfGuests = b.NumberOfGuests,
                 TotalAmount = b.TotalAmount,
                 Status = b.Status,
                 CreatedAt = b.CreatedAt,
-                GuestId = b.GuestId,
                 GuestName = b.Guest?.FullName ?? string.Empty,
-                RoomId = b.RoomId,
                 RoomNumber = b.Room?.RoomNumber ?? string.Empty
             };
         }

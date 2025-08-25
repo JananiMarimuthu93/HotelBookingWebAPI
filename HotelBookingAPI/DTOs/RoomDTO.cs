@@ -29,7 +29,6 @@
     // DTO for reading room details (response)
     public class RoomReadDto
     {
-        public int RoomId { get; set; }
         public string RoomNumber { get; set; } = string.Empty;
         public int Capacity { get; set; }
         public decimal PricePerDay { get; set; }
@@ -38,7 +37,6 @@
         public string? Floor { get; set; }
         public string? ViewType { get; set; }
         public DateTime CreatedAt { get; set; }
-        public int RoomTypeId { get; set; }
         public string RoomTypeName { get; set; } = string.Empty; 
     }
 }
