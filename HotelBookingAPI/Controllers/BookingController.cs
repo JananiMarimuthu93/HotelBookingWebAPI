@@ -41,11 +41,21 @@ namespace HotelBookingAPI.Controllers
         // POST: api/Booking
         [HttpPost]
         [Authorize(Roles = "Manager,Guests")]
+        [HttpPost]
+        [Authorize(Roles = "Manager,Guests")]
         public async Task<ActionResult<BookingReadDto>> Create([FromBody] BookingCreateDto dto)
         {
-            var created = await _bookingService.CreateAsync(dto);
-            return Ok(created);
+            try
+            {
+                var created = await _bookingService.CreateAsync(dto);
+                return Ok(created);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
+
 
         // PUT: api/Booking/{id}
         [HttpPut("{id}")]
