@@ -15,7 +15,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the dependency injection container.
 // Here, MVC controllers are being added, which handle web API requests.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
 
 // Registering Swagger services to help generate API documentation and provide an API explorer.
 

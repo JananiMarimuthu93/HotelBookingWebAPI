@@ -2,6 +2,7 @@
 using HotelBookingAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -29,8 +30,8 @@ namespace HotelBookingAPI.Controllers
         }
 
         // GET: api/Booking/{id}
-        [HttpGet("{id}")]
-        [Authorize(Roles = "Manager,Guests")]
+        [HttpGet("{id:int}")]
+        [Authorize(Roles = "Manager,Guest")]
         public async Task<ActionResult<BookingReadDto>> GetById(int id)
         {
             var booking = await _bookingService.GetByIdAsync(id);
@@ -40,41 +41,54 @@ namespace HotelBookingAPI.Controllers
 
         // POST: api/Booking
         [HttpPost]
-        [Authorize(Roles = "Manager,Guests")]
-        [HttpPost]
-        [Authorize(Roles = "Manager,Guests")]
+        [Authorize(Roles = "Manager,Guest")]
         public async Task<ActionResult<BookingReadDto>> Create([FromBody] BookingCreateDto dto)
         {
             try
             {
                 var created = await _bookingService.CreateAsync(dto);
-                return Ok(created);
+                return (created);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 return BadRequest(new { Message = ex.Message });
             }
         }
 
-
         // PUT: api/Booking/{id}
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         [Authorize(Roles = "Manager")]
         public async Task<ActionResult<BookingReadDto>> Update(int id, [FromBody] BookingUpdateDto dto)
         {
-            var updated = await _bookingService.UpdateAsync(id, dto);
-            if (updated == null) return NotFound();
-            return Ok(updated);
+            try
+            {
+                var updated = await _bookingService.UpdateAsync(id, dto);
+                if (updated == null) return NotFound();
+                return Ok(updated);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
-        // DELETE: api/Booking/{id}
-        [HttpDelete("{id}")]
+        // DELETE: api/Booking/{id}  -> soft delete (Cancel)
+        [HttpDelete("{id:int}")]
         [Authorize(Roles = "Manager")]
         public async Task<ActionResult> Delete(int id)
         {
             var success = await _bookingService.DeleteAsync(id);
             if (!success) return NotFound();
             return NoContent();
+        }
+
+        // GET: api/Booking/total
+        [HttpGet("total")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> GetTotalBookings()
+        {
+            var total = await _bookingService.GetTotalBookingsAsync();
+            return Ok(total);
         }
     }
 }

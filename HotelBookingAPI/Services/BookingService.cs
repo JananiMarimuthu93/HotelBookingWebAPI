@@ -2,6 +2,7 @@
 using HotelBookingAPI.Models.DomainModels;
 using HotelBookingAPI.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,19 +11,24 @@ namespace HotelBookingAPI.Services
 {
     public class BookingService
     {
-        private readonly IGenericRepository<Booking> _genericRepo;
+        private readonly IGenericRepository<Booking> _bookingRepoGeneric;
         private readonly IGenericRepository<Room> _roomRepo;
+        private readonly IBookingRepository _bookingSpecialRepo;
 
-        public BookingService(IGenericRepository<Booking> genericRepo, IGenericRepository<Room> roomRepo)
+        public BookingService(
+            IGenericRepository<Booking> bookingRepoGeneric,
+            IGenericRepository<Room> roomRepo,
+            IBookingRepository bookingSpecialRepo)
         {
-            _genericRepo = genericRepo;
+            _bookingRepoGeneric = bookingRepoGeneric;
             _roomRepo = roomRepo;
+            _bookingSpecialRepo = bookingSpecialRepo;
         }
 
-        // Get all bookings
+        
         public async Task<IEnumerable<BookingReadDto>> GetAllAsync()
         {
-            var bookings = await _genericRepo.GetAllQueryable()
+            var bookings = await _bookingRepoGeneric.GetAllQueryable()
                 .Include(b => b.Guest)
                 .Include(b => b.Room)
                 .AsNoTracking()
@@ -31,36 +37,36 @@ namespace HotelBookingAPI.Services
             return bookings.Select(MapToReadDto);
         }
 
-        // Get booking by ID
         public async Task<BookingReadDto?> GetByIdAsync(int id)
         {
-            var booking = await _genericRepo.GetAllQueryable()
+            var booking = await _bookingRepoGeneric.GetAllQueryable()
                 .Include(b => b.Guest)
                 .Include(b => b.Room)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BookingId == id);
 
-            if (booking == null) return null;
-
-            return MapToReadDto(booking);
+            return booking == null ? null : MapToReadDto(booking);
         }
 
-        // Create new booking
+        public async Task<int> GetTotalBookingsAsync()
+        {
+            return await _bookingSpecialRepo.GetTotalBookingsAsync();
+        }
+
+       
         public async Task<BookingReadDto> CreateAsync(BookingCreateDto dto)
         {
-            var today = DateTime.UtcNow.Date;
+            ValidateDateRange(dto.CheckInDate, dto.CheckOutDate);
 
-            //  Validation: Check-in must be today or in the future
-            if (dto.CheckInDate.Date < today)
-                throw new Exception("Check-in date cannot be in the past.");
+            var room = await _roomRepo.GetByIdAsync(dto.RoomId)
+                       ?? throw new InvalidOperationException($"Room {dto.RoomId} does not exist.");
 
-            //  Validation: Check-out must be after check-in
-            if (dto.CheckOutDate.Date <= dto.CheckInDate.Date)
-                throw new Exception("Check-out date must be after the check-in date.");
+            if (dto.NumberOfGuests > room.Capacity)
+                throw new InvalidOperationException($"Number of guests exceeds room capacity ({room.Capacity}).");
 
-            var room = await _roomRepo.GetByIdAsync(dto.RoomId);
-            if (room == null || !room.IsAvailable)
-                throw new Exception($"Room {dto.RoomId} is not available for booking.");
+            var available = await _bookingSpecialRepo.IsRoomAvailableAsync(dto.RoomId, dto.CheckInDate, dto.CheckOutDate);
+            if (!available)
+                throw new InvalidOperationException("The room is already booked during the selected dates.");
 
             var booking = new Booking
             {
@@ -68,85 +74,94 @@ namespace HotelBookingAPI.Services
                 CheckOutDate = dto.CheckOutDate,
                 NumberOfGuests = dto.NumberOfGuests,
                 TotalAmount = dto.TotalAmount,
-                Status = dto.Status,
+                Status = BookingStatus.Confirmed, 
                 GuestId = dto.GuestId,
                 RoomId = dto.RoomId
             };
 
-            var created = await _genericRepo.AddAsync(booking);
+            var created = await _bookingRepoGeneric.AddAsync(booking);
 
-            // Mark room as unavailable
-            room.IsAvailable = false;
-            await _roomRepo.UpdateAsync(room);
-
-            var bookingWithNav = await _genericRepo.GetAllQueryable()
+            var withNav = await _bookingRepoGeneric.GetAllQueryable()
                 .Include(b => b.Guest)
                 .Include(b => b.Room)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BookingId == created.BookingId);
 
-            return MapToReadDto(bookingWithNav!);
+            return MapToReadDto(withNav!);
         }
 
-
-        // Update booking
         public async Task<BookingReadDto?> UpdateAsync(int id, BookingUpdateDto dto)
         {
-            var existing = await _genericRepo.GetByIdAsync(id);
+            ValidateDateRange(dto.CheckInDate, dto.CheckOutDate);
+
+            var existing = await _bookingRepoGeneric.GetByIdAsync(id);
             if (existing == null) return null;
+
+            // Capacity check (room may be changed)
+            var room = await _roomRepo.GetByIdAsync(dto.RoomId)
+                       ?? throw new InvalidOperationException($"Room {dto.RoomId} does not exist.");
+
+            if (dto.NumberOfGuests > room.Capacity)
+                throw new InvalidOperationException($"Number of guests exceeds room capacity ({room.Capacity}).");
+
+            // Overlap check excluding this booking
+            var available = await _bookingSpecialRepo.IsRoomAvailableAsync(dto.RoomId, dto.CheckInDate, dto.CheckOutDate, id);
+            if (!available)
+                throw new InvalidOperationException("The room is already booked during the selected dates.");
 
             existing.CheckInDate = dto.CheckInDate;
             existing.CheckOutDate = dto.CheckOutDate;
             existing.NumberOfGuests = dto.NumberOfGuests;
             existing.TotalAmount = dto.TotalAmount;
-            existing.Status = dto.Status;
             existing.GuestId = dto.GuestId;
             existing.RoomId = dto.RoomId;
 
-            var updated = await _genericRepo.UpdateAsync(existing);
+           
+            existing.Status = dto.Status;
 
-            var bookingWithNav = await _genericRepo.GetAllQueryable()
+            var updated = await _bookingRepoGeneric.UpdateAsync(existing);
+
+            var withNav = await _bookingRepoGeneric.GetAllQueryable()
                 .Include(b => b.Guest)
                 .Include(b => b.Room)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BookingId == updated.BookingId);
 
-            return MapToReadDto(bookingWithNav!);
+            return MapToReadDto(withNav!);
         }
 
-        // Delete booking → free up room
         public async Task<bool> DeleteAsync(int id)
         {
-            var existing = await _genericRepo.GetByIdAsync(id);
+            var existing = await _bookingRepoGeneric.GetByIdAsync(id);
             if (existing == null) return false;
 
-            var success = await _genericRepo.DeleteAsync(id);
-            if (success)
-            {
-                var room = await _roomRepo.GetByIdAsync(existing.RoomId);
-                if (room != null)
-                {
-                    room.IsAvailable = true;
-                    await _roomRepo.UpdateAsync(room);
-                }
-            }
-            return success;
+            existing.Status = BookingStatus.Cancelled;
+            await _bookingRepoGeneric.UpdateAsync(existing);
+            return true;
         }
 
-        // Maps Booking entity to BookingReadDto
-        private static BookingReadDto MapToReadDto(Booking b)
+
+        private static void ValidateDateRange(DateTime checkIn, DateTime checkOut)
         {
-            return new BookingReadDto
-            {
-                CheckInDate = b.CheckInDate,
-                CheckOutDate = b.CheckOutDate,
-                NumberOfGuests = b.NumberOfGuests,
-                TotalAmount = b.TotalAmount,
-                Status = b.Status,
-                CreatedAt = b.CreatedAt,
-                GuestName = b.Guest?.FullName ?? string.Empty,
-                RoomNumber = b.Room?.RoomNumber ?? string.Empty
-            };
+            var today = DateTime.UtcNow.Date;
+
+            if (checkIn.Date < today)
+                throw new InvalidOperationException("Check-in date cannot be in the past.");
+
+            if (checkOut <= checkIn)
+                throw new InvalidOperationException("Check-out date must be after the check-in date.");
         }
+
+        private static BookingReadDto MapToReadDto(Booking b) => new()
+        {
+            CheckInDate = b.CheckInDate,
+            CheckOutDate = b.CheckOutDate,
+            NumberOfGuests = b.NumberOfGuests,
+            TotalAmount = b.TotalAmount,
+            Status = b.Status,
+            CreatedAt = b.CreatedAt,
+            GuestName = b.Guest?.FullName ?? string.Empty,
+            RoomNumber = b.Room?.RoomNumber ?? string.Empty
+        };
     }
 }

@@ -27,7 +27,6 @@
         public string Address { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
 
-        // Optional: number of bookings or list of booking IDs
         public int TotalBookings { get; set; }
     }
 }

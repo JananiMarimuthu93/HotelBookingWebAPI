@@ -7,5 +7,6 @@ namespace HotelBookingAPI.Repositories.Interfaces
     {
         // Check if Room is available for given date range
         Task<bool> IsRoomAvailableAsync(int roomId, DateTime checkIn, DateTime checkOut, int? excludeBookingId = null);
+        Task<int> GetTotalBookingsAsync();
     }
 }

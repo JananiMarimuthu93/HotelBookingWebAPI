@@ -24,6 +24,5 @@ namespace HotelBookingAPI.Repositories.Interfaces
 
         IQueryable<T> GetAllQueryable();
 
-        //Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
     }
 }
