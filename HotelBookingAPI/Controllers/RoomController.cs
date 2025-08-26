@@ -77,5 +77,16 @@ namespace HotelBookingAPI.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+
+        [HttpGet("Capacity/{capacity}/Floor/{floor}")]
+        public async Task<ActionResult<IEnumerable<RoomTypeReadDto>>> GetRoomTypesByCapacityAndFloor(int capacity, string floor)
+        {
+            var filteredRoomTypes = await _roomService.GetByCapacityAndFloorAsync(capacity, floor);
+
+            if (filteredRoomTypes == null || !filteredRoomTypes.Any())
+                return NotFound($"No room types found with Capacity '{capacity}' on Floor '{floor}'.");
+
+            return Ok(filteredRoomTypes);
+        }
     }
 }

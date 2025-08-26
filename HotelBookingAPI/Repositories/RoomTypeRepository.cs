@@ -31,5 +31,7 @@ namespace HotelBookingAPI.Repositories.Implementations
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+
     }
 }

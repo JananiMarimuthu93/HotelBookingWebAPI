@@ -41,5 +41,14 @@ namespace HotelBookingAPI.Repositories.Implementations
                 .AnyAsync(r => r.RoomNumber.ToLower() == roomNumber.ToLower() &&
                                (!excludeId.HasValue || r.RoomId != excludeId.Value));
         }
+
+        public async Task<IEnumerable<Room>> GetByCapacityAndFloorAsync(int capacity, string floor)
+        {
+            return await _context.Rooms
+                .Include(r => r.RoomType)
+                .AsNoTracking()
+                .Where(r => r.Capacity == capacity && r.Floor.ToLower() == floor.ToLower())
+                .ToListAsync();
+        }
     }
 }

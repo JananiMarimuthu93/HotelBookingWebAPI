@@ -139,5 +139,12 @@ namespace HotelBookingAPI.Services
                 RoomTypeName = r.RoomType?.TypeName ?? string.Empty
             };
         }
+
+        public async Task<IEnumerable<RoomReadDto>> GetByCapacityAndFloorAsync(int capacity, string floor)
+        {
+            var rooms = await _roomRepo.GetByCapacityAndFloorAsync(capacity, floor);
+            return rooms.Select(MapToReadDto);
+        }
+
     }
 }

@@ -14,5 +14,7 @@ namespace HotelBookingAPI.Repositories.Interfaces
 
         // Check if RoomNumber already exists (for create/update)
         Task<bool> IsRoomNumberExistsAsync(string roomNumber, int? excludeId = null);
+
+        Task<IEnumerable<Room>> GetByCapacityAndFloorAsync(int capacity, string floor);
     }
 }

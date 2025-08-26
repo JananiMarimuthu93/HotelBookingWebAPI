@@ -111,5 +111,7 @@ namespace HotelBookingAPI.Services
 
             return await _genericRepo.DeleteAsync(id);
         }
+
+
     }
 }
